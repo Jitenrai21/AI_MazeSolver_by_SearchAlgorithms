@@ -1,35 +1,29 @@
+import heapq
+from collections import deque
 
-maze = [
-    [1, 0, 1, 1, 1],
-    [1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 1],
-    [1, 1, 1, 0, 1],
-    [1, 1, 1, 0, 1]
-]
-start = (0, 1)
-goal = (4, 3)
-
+#Depth-First Search
 def dfs(maze, start, goal):
-    stack = [start]
+    stack = [start] # This initialize the stack with the start position
     visited = set()
     parent = {}
 
     while stack:
-        current = stack.pop()
+        current = stack.pop() # pops the values for row and column from the stack
         row, col = current
 
         if current == goal:
             path = []
-            while current != start:
+            while current != start: # trace back the path from goal to start
                 path.append(current)
                 current = parent[current]
             path.append(start)
-            path.reverse()
+            path.reverse() # reverses the traced back path
             return path
 
         if current not in visited:
             visited.add(current)
 
+            #explores all four possible neighbpring directions
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 new_row, new_col = row + dr, col + dc
                 if 0 <= new_row < len(maze) and 0 <= new_col < len(maze[0]) and maze[new_row][new_col] == 0:
@@ -38,12 +32,11 @@ def dfs(maze, start, goal):
                         parent[neighbor] = current
                         stack.append(neighbor)
 
-    return None  
+    return None  # return None if no path is found
 
-from collections import deque
-
+#Breadth-First Search
 def bfs(maze, start, goal):
-    queue = deque([(start, [start])])
+    queue = deque([(start, [start])]) # initialize queue with start and initial path
     visited = set()
 
     while queue:
@@ -61,8 +54,7 @@ def bfs(maze, start, goal):
                     queue.append(((new_row, new_col), path + [(new_row,new_col)]))
     return None
 
-import heapq
-
+#Uniform Cost Search
 def ucs(maze, start, goal):
     pq = [(0, start, [start])] #here, cost = 0, (row,col) = start, path= [start]
     visited = set()
@@ -76,24 +68,27 @@ def ucs(maze, start, goal):
         if(row, col) not in visited:
             visited.add((row, col))
 
-            directions = [(-1,0), (1,0), (0,-1), (0,1)]
+            directions = [(-1,0), (1,0), (0,-1), (0,1)] # possible movements
 
             for dr, dc in directions:
                 new_row, new_col = row + dr, col + dc
+                # check neighbor for within boundary and open space
                 if 0 <= new_row < len(maze) and 0 <= new_col < len(maze[0]) and maze[new_row][new_col] == 0:
                     new_cost = cost + 1
                     heapq.heappush(pq, (new_cost, (new_row, new_col), path + [(new_row, new_col)]))
     return None
 
+#helper function 
 def manhattan_distance (point1, point2):
-    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1]) #gives absolute value with no negative value
 
+#A* Search
 def a_star(maze, start, goal):
     pq = [(manhattan_distance(start, goal), 0, start, [start])]
     visited = set()
 
     while pq:
-        f, cost, (row, col), path = heapq.heappop(pq)
+        f, cost, (row, col), path = heapq.heappop(pq) # f = heuristics + cost
 
         if (row, col) == goal:
             return path
@@ -107,7 +102,7 @@ def a_star(maze, start, goal):
                 new_row, new_col = row + dr, col + dc
                 if 0 <= new_row < len(maze) and 0 <= new_col < len(maze[0]) and maze[new_row][new_col] == 0:
                     new_cost = cost + 1
-                    h = manhattan_distance((new_row, new_col), goal)
+                    h = manhattan_distance((new_row, new_col), goal) # heuristics calculation
                     heapq.heappush(pq, (new_cost + h, new_cost, (new_row, new_col), path + [(new_row, new_col)]))
 
     return None
@@ -135,6 +130,7 @@ def best_first_search(maze, start, goal):
 
     return None
 
+#Function to choose a search algorithm
 def choose_algorithm():
     print("Select a search algorithm:")
     print("1. Depth First Search (DFS)")
@@ -143,7 +139,7 @@ def choose_algorithm():
     print("4. A* Search")
     print("5. Best-First Search")
 
-    choice = input("Enter the number for your choosen algorithm: ")
+    choice = input("Enter the number for your chosen algorithm: ")
 
     if choice == '1':
         return dfs
@@ -159,31 +155,25 @@ def choose_algorithm():
         print("Invalid choice. Please choose from one of the available search algorithm choice.")
         return choose_algorithm()
 
+#Function to input a custom maze
 def input_maze():
-    # print("Enter a maze where '0' represents open path and '1' represents walls.\n For example maze = [[1, 0, 1, 1, 1], [1,0,0,1,1]], is one example of maze with two 5-column rows.")
-    # maze = []
-    # rows = int(input("Enter number of rows for your maze: "))
-    # for _ in range(rows):
-    #     row = input()
-    #     if set(row) >= {'0', '1'}:
-    #         maze.append([int(c) for c in row])
-    #     else:
-    #         print("The input is invalid!! A row can only consist of 0's and 1's.")
-    #         return input_maze()
-    # return maze
     maze = []
     rows = int(input("Enter the number of rows for the maze: "))
     cols = int(input("Enter the number of columns for the maze: "))
 
     print("Enter the maze row by row. For example: 10010 for a 5-column row.")
-    for _ in range(rows):
-        row = input()
-        if set(row) >= {'0', '1'}:
-            maze.append([int(c) for c in row])
-        else:
-            print("The input is invalid!! A row can only consist of 0's and 1's.")
-            return input_maze()
+    for i in range(rows):
+        while True:
+            row = input(f"Row {i+1}: ")
+            if len(row) != cols:
+                print(f"Invalid input!! The row can only have {cols} number of input for the maze.")
+            elif set(row) <= {'0', '1'}:
+                maze.append([int(c) for c in row]) #converts input string into a list of integers for the maze
+                break
+            else:
+                print("Invalid input! The maze can only consist of '1' and '0' digits.")
     
+    #function to get start and goal position
     def get_position(prompt):
         while True:
             pos = input(prompt)
@@ -200,15 +190,20 @@ def input_maze():
 
     return maze, start, goal
 
+# Function to provide a predefined maze and positions
 def predefined_maze():
-    return [
+    maze = [
         [1, 0, 1, 1, 1],
         [1, 0, 1, 0, 1],
         [1, 0, 0, 0, 1],
         [1, 1, 1, 0, 1],
         [1, 1, 1, 0, 1]
     ]
+    start = (0,1)
+    goal = (4,3)
+    return maze, start, goal
 
+#Function to solve maze and give output
 def solve_maze(algorithm, maze, start, goal):
     path = algorithm(maze, start, goal)
     if path:
@@ -216,36 +211,39 @@ def solve_maze(algorithm, maze, start, goal):
         visualize_maze(maze, path, start, goal)
     else:
         print("No path found!!")
-        
+
+#Function to display visualization of maze with path       
 def visualize_maze(maze, path, start, goal):
-    visual = [row[:] for row in maze]
+    visual = [row[:] for row in maze] #creates a copy of the maze for visualization
     for (r,c) in path:
         if (r,c ) != start and (r,c) != goal:
-            visual[r][c] = '•'
-    visual[start[0]][start[1]] = 'S'
-    visual[goal[0]][goal[1]] = 'G'
+            visual[r][c] = '•' #this marks the path
+    visual[start[0]][start[1]] = 'S' #Start position in maze
+    visual[goal[0]][goal[1]] = 'G'  #goal position in maze
 
     for row in visual:
-        print(' '.join(str(cell) for cell in row))
+        print(' '.join(str(cell) for cell in row))#printing visualized maze
 
+#Main function to run the maze solver program
 def main():
     while True:
         algorithm = choose_algorithm()
 
         choice = input("Do you want to create your own maze? (Y/N):")
         if choice.lower() == 'y':
-            maze = input_maze()
+            maze, start, goal = input_maze()
         elif choice.lower() == 'n':
-            maze = predefined_maze()
+            maze, start, goal = predefined_maze()
         else:
             print("Invalid input! Thus, the predefined maze is opted.")
-            maze = predefined_maze
+            maze, start, goal = predefined_maze()
 
         solve_maze(algorithm, maze, start, goal)
 
         again = input("Do you want to solve another maze? (Y/N): ")
         if again.lower() != 'y':
-             break
+             break #ends loop if the user prompts to not to solve another maze.
+    print("Hence, This was the maze solver project of Jiten Rai. Thank you!!")
         
 if __name__ == "__main__":
     main()
