@@ -158,24 +158,94 @@ def choose_algorithm():
     else:
         print("Invalid choice. Please choose from one of the available search algorithm choice.")
         return choose_algorithm()
+
+def input_maze():
+    # print("Enter a maze where '0' represents open path and '1' represents walls.\n For example maze = [[1, 0, 1, 1, 1], [1,0,0,1,1]], is one example of maze with two 5-column rows.")
+    # maze = []
+    # rows = int(input("Enter number of rows for your maze: "))
+    # for _ in range(rows):
+    #     row = input()
+    #     if set(row) >= {'0', '1'}:
+    #         maze.append([int(c) for c in row])
+    #     else:
+    #         print("The input is invalid!! A row can only consist of 0's and 1's.")
+    #         return input_maze()
+    # return maze
+    maze = []
+    rows = int(input("Enter the number of rows for the maze: "))
+    cols = int(input("Enter the number of columns for the maze: "))
+
+    print("Enter the maze row by row. For example: 10010 for a 5-column row.")
+    for _ in range(rows):
+        row = input()
+        if set(row) >= {'0', '1'}:
+            maze.append([int(c) for c in row])
+        else:
+            print("The input is invalid!! A row can only consist of 0's and 1's.")
+            return input_maze()
     
+    def get_position(prompt):
+        while True:
+            pos = input(prompt)
+            try:
+                row, col = map(int, pos.split(','))
+                if 0 <= row < rows and 0 <= col < cols and maze[row][col] == 0:
+                    return (row, col)
+                else:
+                    print("Invalid!! The postion must be within the boundary and not a wall.")
+            except ValueError:
+                print("Invalid input format. Please enter the position as 'row,col' (e.g., '0,0').")
+    start = get_position("Enter your start position in the maze: ")
+    goal = get_position("Enter your goal position in the maze: ")
+
+    return maze, start, goal
+
+def predefined_maze():
+    return [
+        [1, 0, 1, 1, 1],
+        [1, 0, 1, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1],
+        [1, 1, 1, 0, 1]
+    ]
+
 def solve_maze(algorithm, maze, start, goal):
     path = algorithm(maze, start, goal)
     if path:
         print ("Path Found! Path:", path)
-        # visualise_maze(maze, path, start, goal)
+        visualize_maze(maze, path, start, goal)
     else:
         print("No path found!!")
+        
+def visualize_maze(maze, path, start, goal):
+    visual = [row[:] for row in maze]
+    for (r,c) in path:
+        if (r,c ) != start and (r,c) != goal:
+            visual[r][c] = '•'
+    visual[start[0]][start[1]] = 'S'
+    visual[goal[0]][goal[1]] = 'G'
+
+    for row in visual:
+        print(' '.join(str(cell) for cell in row))
 
 def main():
     while True:
         algorithm = choose_algorithm()
-        path = algorithm(maze, start, goal)
-        if path:
-            print ("Path Found! Path:", path)
-            # visualise_maze(maze, path, start, goal)
-        else:
-            print("No path found!!")
 
+        choice = input("Do you want to create your own maze? (Y/N):")
+        if choice.lower() == 'y':
+            maze = input_maze()
+        elif choice.lower() == 'n':
+            maze = predefined_maze()
+        else:
+            print("Invalid input! Thus, the predefined maze is opted.")
+            maze = predefined_maze
+
+        solve_maze(algorithm, maze, start, goal)
+
+        again = input("Do you want to solve another maze? (Y/N): ")
+        if again.lower() != 'y':
+             break
+        
 if __name__ == "__main__":
     main()
