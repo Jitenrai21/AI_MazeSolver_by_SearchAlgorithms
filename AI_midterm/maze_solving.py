@@ -210,7 +210,14 @@ def solve_maze(algorithm, maze, start, goal):
         print ("Path Found! Path:", path)
         visualize_maze(maze, path, start, goal)
     else:
-        print("No path found!!")
+        print("No path found! Try by different or opt to some other maze.")
+
+#Function to display visualization of initial maze
+def visualize_initial_maze(maze):
+    print("Initial maze layout:")
+    for row in maze:
+        print(" ".join(str(cell) for cell in row))
+
 
 #Function to display visualization of maze with path       
 def visualize_maze(maze, path, start, goal):
@@ -237,6 +244,8 @@ def main():
         else:
             print("Invalid input! Thus, the predefined maze is opted.")
             maze, start, goal = predefined_maze()
+
+        visualize_initial_maze(maze)
 
         solve_maze(algorithm, maze, start, goal)
 
