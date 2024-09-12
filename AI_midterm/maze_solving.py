@@ -1,8 +1,8 @@
 import heapq
 from collections import deque
 
-#Depth-First Search
-def dfs(maze, start, goal):
+#Breadth-First Search
+def bfs(maze, start, goal):
     stack = [start] # This initialize the stack with the start position
     visited = set()
     parent = {}
@@ -34,8 +34,8 @@ def dfs(maze, start, goal):
 
     return None  # return None if no path is found
 
-#Breadth-First Search
-def bfs(maze, start, goal):
+#Depth-First Search
+def dfs(maze, start, goal):
     queue = deque([(start, [start])]) # initialize queue with start and initial path
     visited = set()
 
