@@ -1,5 +1,5 @@
-import heapq
-from collections import deque
+import heapq #for priority queue operations used in UCS, A*, Best First Search
+from collections import deque #For queue operations in BFS
 
 #depth-First Search
 def dfs(maze, start, goal):
@@ -7,12 +7,12 @@ def dfs(maze, start, goal):
     visited = set()
     parent = {}
 
-    while stack:
+    while stack: #loop until there are positions in the stack
         current = stack.pop() # pops the values for row and column from the stack
-        row, col = current
+        row, col = current #splitting the values into row and columns for easier manipulation
 
         if current == goal:
-            path = []
+            path = [] #initializing an empty list for path
             while current != start: # trace back the path from goal to start
                 path.append(current)
                 current = parent[current]
@@ -37,13 +37,13 @@ def dfs(maze, start, goal):
 
 #Breadth-First Search
 def bfs(maze, start, goal):
-    queue = deque([(start, [start])]) # initialize queue with start and initial path
+    queue = deque([(start, [start])]) # initialize queue with start and initial path, deque function provides O(1) append and pop operations from both ends
     visited = set()
 
-    while queue:
-        (row, col), path = queue.popleft()
+    while queue: #process queue until empty or goal found
+        (row, col), path = queue.popleft() #get current position and path from queue front (FIFO)
 
-        if (row,col) == goal:
+        if (row,col) == goal: 
             return path
         
         if (row, col) not in visited:
@@ -85,10 +85,11 @@ def manhattan_distance (point1, point2):
 
 #A* Search
 def a_star(maze, start, goal):
-    pq = [(manhattan_distance(start, goal), 0, start, [start])]
+    pq = [(manhattan_distance(start, goal), 0, start, [start])] #initializing with [f_score, cost, position, path]
     visited = set()
 
     while pq:
+        #extract entry with lowest f_score, cost, position, path
         f, cost, (row, col), path = heapq.heappop(pq) # f = heuristics + cost
 
         if (row, col) == goal:
@@ -102,7 +103,7 @@ def a_star(maze, start, goal):
             for dr, dc in directions:
                 new_row, new_col = row + dr, col + dc
                 if 0 <= new_row < len(maze) and 0 <= new_col < len(maze[0]) and maze[new_row][new_col] == 0:
-                    new_cost = cost + 1
+                    new_cost = cost + 1 #increment cost by 1 for uniform step cost
                     h = manhattan_distance((new_row, new_col), goal) # heuristics calculation
                     heapq.heappush(pq, (new_cost + h, new_cost, (new_row, new_col), path + [(new_row, new_col)]))
 
@@ -110,7 +111,7 @@ def a_star(maze, start, goal):
 
 
 def best_first_search(maze, start, goal):
-    pq = [(manhattan_distance(start, goal), start, [start])]
+    pq = [(manhattan_distance(start, goal), start, [start])] #initializing priority queue with [heuristic, position, path], starting with heuristic
     visited = set()
 
     while pq:
@@ -159,8 +160,18 @@ def choose_algorithm():
 #Function to input a custom maze
 def input_maze():
     maze = []
-    rows = int(input("Enter the number of rows for the maze: "))
-    cols = int(input("Enter the number of columns for the maze: "))
+    # Prompt for rows until valid (minimum 2)
+    while True:
+        rows = int(input("Enter the number of rows for the maze (minimum 2): "))
+        if rows >= 2:
+            break
+        print("Error: Maze must have at least 2 rows.")
+    # Prompt for columns until valid (minimum 2)
+    while True:
+        cols = int(input("Enter the number of columns for the maze (minimum 2): "))
+        if cols >= 2:
+            break
+        print("Error: Maze must have at least 2 columns.")
 
     print("Enter the maze row by row. For example: 10010 for a 5-column row.")
     for i in range(rows):
@@ -168,17 +179,18 @@ def input_maze():
             row = input(f"Row {i+1}: ")
             if len(row) != cols:
                 print(f"Invalid input!! The row can only have {cols} number of input for the maze.")
-            elif set(row) <= {'0', '1'}:
+            elif set(row) <= {'0', '1'}: #verifying each row consists only '0' and '1'
                 maze.append([int(c) for c in row]) #converts input string into a list of integers for the maze
                 break
             else:
-                print("Invalid input! The maze can only consist of '1' and '0' digits.")
+                print("Invalid input! The maze can only consist of '1' and '0' representing wall and path respectively.")
     
     #function to get start and goal position
     def get_position(prompt):
         while True:
             pos = input(prompt)
             try:
+                # Parse input into row and column integers
                 row, col = map(int, pos.split(','))
                 if 0 <= row < rows and 0 <= col < cols and maze[row][col] == 0:
                     return (row, col)
@@ -186,8 +198,8 @@ def input_maze():
                     print("Invalid!! The postion must be within the boundary and not a wall.")
             except ValueError:
                 print("Invalid input format. Please enter the position as 'row,col' (e.g., '0,0').")
-    start = get_position("Enter your start position in the maze: ")
-    goal = get_position("Enter your goal position in the maze: ")
+    start = get_position("Enter your start position in the maze (e.g., '0,0'): ")
+    goal = get_position("Enter your goal position in the maze (e.g., '1,1'): ")
 
     return maze, start, goal
 
@@ -195,10 +207,10 @@ def input_maze():
 def predefined_maze():
     maze = [
         [1, 0, 1, 1, 1],
-        [1, 0, 1, 0, 1],
         [1, 0, 0, 0, 1],
-        [1, 1, 1, 0, 1],
-        [1, 1, 1, 0, 1]
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 0, 0, 1]
     ]
     start = (0,1)
     goal = (4,3)
@@ -234,7 +246,7 @@ def visualize_maze(maze, path, start, goal):
 
 #Main function to run the maze solver program
 def main():
-    while True:
+    while True: #loop to allow solving multiple mazes
         algorithm = choose_algorithm()
 
         choice = input("Do you want to create your own maze? (Y/N):")
